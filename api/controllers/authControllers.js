@@ -84,7 +84,7 @@ const updateUser = async (req, res) => {
 const deleteUser = async (req, res) => {
     const { id } = req.body;
     try {
-        if (validateAdmin(req.user)) {
+        if (validateAdmin(req.user) && req.user.id !== id) {
             return res.status(403).json({ message: "Access denied" });
         }
         const user = await User.findUserById(id);
@@ -102,7 +102,7 @@ const deleteUser = async (req, res) => {
 const getUser = async (req, res) => {
     const { id } = req.body;
     try {
-        if (validateAdmin(req.user)) {
+        if (validateAdmin(req.user) && req.user.id !== id) {
             return res.status(403).json({ message: "Access denied" });
         }
         const user = await User.findUserById(id);
