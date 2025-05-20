@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 const { closePool, handleDatabaseError } = require('./db');
 const app = express();
 
-
+const authRoutes = require('./routers/authRoutes');
 
 // app.use(cors({
 //   origin: 'https://play-back.arcktis.fr',
@@ -19,7 +19,7 @@ app.get('/', (req, res) => {
   res.redirect('https://flash-green.arcktis.fr/');
 });
 
-
+app.use('/api/auth', authRoutes);
 
 // Gestion de l'arrêt du serveur
 process.on('SIGINT', async () => {
