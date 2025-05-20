@@ -4,6 +4,7 @@ const bodyParser = require("body-parser");
 const { closePool, handleDatabaseError } = require("./db");
 const app = express();
 
+const authRoutes = require('./routers/authRoutes');
 const gameRoutes = require("./routers/gameRoutes");
 
 // app.use(cors({
@@ -19,6 +20,7 @@ app.get("/", (req, res) => {
   res.redirect("https://flash-green.arcktis.fr/");
 });
 
+app.use('/api/auth', authRoutes);
 app.use("/api/games", gameRoutes);
 
 // Gestion de l'arrêt du serveur
