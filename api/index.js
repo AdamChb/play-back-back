@@ -17,7 +17,7 @@ app.use(cors("*"));
 
 app.use(express.json());
 app.get("/", (req, res) => {
-  res.redirect("https://flash-green.arcktis.fr/");
+  res.redirect("https://play-back.arcktis.fr/");
 });
 
 app.use('/api/auth', authRoutes);
