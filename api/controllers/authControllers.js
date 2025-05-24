@@ -46,7 +46,7 @@ const register = async (req, res) => {
 const createUser = async (req, res) => {
     const { pseudo, email, password } = req.body;
     try {
-        if (validateAdmin(req.user)) {
+        if (!validateAdmin(req.user)) {
             return res.status(403).json({ message: "Access denied" });
         }
         const existingUser = await User.findUserByEmail(email);
@@ -65,7 +65,7 @@ const createUser = async (req, res) => {
 const updateUser = async (req, res) => {
     const { id, pseudo, email, password, role } = req.body;
     try {
-        if (validateAdmin(req.user) && req.user.id !== id) {
+        if (!validateAdmin(req.user) && req.user.id !== id) {
             return res.status(403).json({ message: "Access denied" });
         }
         const user = await User.findUserById(id);
@@ -84,7 +84,7 @@ const updateUser = async (req, res) => {
 const deleteUser = async (req, res) => {
     const { id } = req.body;
     try {
-        if (validateAdmin(req.user)) {
+        if (!validateAdmin(req.user)) {
             return res.status(403).json({ message: "Access denied" });
         }
         const user = await User.findUserById(id);
@@ -102,7 +102,7 @@ const deleteUser = async (req, res) => {
 const getUser = async (req, res) => {
     const { id } = req.body;
     try {
-        if (validateAdmin(req.user)) {
+        if (!validateAdmin(req.user)) {
             return res.status(403).json({ message: "Access denied" });
         }
         const user = await User.findUserById(id);
@@ -118,7 +118,7 @@ const getUser = async (req, res) => {
 
 const getAllUsers = async (req, res) => {
     try {
-        if (validateAdmin(req.user)) {
+        if (!validateAdmin(req.user)) {
             return res.status(403).json({ message: "Access denied" });
         }
         const users = await User.findAllUsers();
