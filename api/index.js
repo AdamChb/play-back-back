@@ -6,6 +6,7 @@ const app = express();
 
 const authRoutes = require('./routers/authRoutes');
 const gameRoutes = require("./routers/gameRoutes");
+const eventRoutes = require("./routers/eventRoutes");
 
 // app.use(cors({
 //   origin: 'https://play-back.arcktis.fr',
@@ -22,6 +23,7 @@ app.get("/", (req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use("/api/games", gameRoutes);
+app.use("/api/events", eventRoutes);
 
 // Gestion de l'arrêt du serveur
 process.on("SIGINT", async () => {
