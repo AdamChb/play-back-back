@@ -12,6 +12,6 @@ router.post("/add", authenticateToken, gameControllers.addGame);
 router.put("/update/:id", authenticateToken, gameControllers.updateGame);
 router.delete("/delete/:id", authenticateToken, gameControllers.deleteGame);
 router.get("/user", authenticateToken, gameControllers.getUserGames);
-router.put("/user/update", authenticateToken, gameControllers.updateUserGames);
+router.put("/user/update", authenticateToken, gameControllers.updateUserGame);
 
 module.exports = router;
