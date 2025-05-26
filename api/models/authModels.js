@@ -14,7 +14,7 @@ const findUserByString = async (string) => {
 };
 
 const findUserByEmail = async (email) => {
-  const query = "SELECT * FROM Utilisateur WHERE pseudo email = ?";
+  const query = "SELECT * FROM Utilisateur WHERE email = ?";
   const values = [email];
 
   try {
