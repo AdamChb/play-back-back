@@ -5,6 +5,6 @@ const gameControllers = require("../controllers/gameControllers");
 const { authenticateToken } = require("../middleware/authMiddleware");
 
 // Route pour récupérer les jeux via une recherche du nom
-router.get("/search", authenticateToken, gameControllers.searchGames);
+router.get("/search", gameControllers.searchGames);
 
 module.exports = router;
