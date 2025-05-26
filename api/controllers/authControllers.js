@@ -23,7 +23,7 @@ const login = async (req, res) => {
       JWT_SECRET,
       { expiresIn: "1h" }
     );
-    res.status(200).json({ token });
+    res.status(200).json({ token, user: { id: user.ID_utilisateur, pseudo: user.pseudo, email: user.email, role: user.role_user } });
   } catch (error) {
     console.error("Error logging in:", error);
     res.status(500).json({ message: "Server error" });
@@ -44,7 +44,7 @@ const register = async (req, res) => {
       JWT_SECRET,
       { expiresIn: "1h" }
     );
-    res.status(201).json({ token });
+    res.status(201).json({ token, user: { id: newUser.ID_utilisateur, pseudo: newUser.pseudo, email: newUser.email, role: 2 } });
   } catch (error) {
     console.error("Error registering user:", error);
     res.status(500).json({ message: "Server error" });
