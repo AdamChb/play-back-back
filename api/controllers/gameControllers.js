@@ -60,7 +60,7 @@ const getUserGames = async (req, res) => {
 
 const updateUserGame = async (req, res) => {
   const userId = req.user.id;
-  const { id_game, status, type } = req.body;
+  const { id_game, status } = req.body;
 
   if (!validateUser(req.user)) {
     return res.status(403).json({ error: "Access denied" });
@@ -70,13 +70,13 @@ const updateUserGame = async (req, res) => {
     return res.status(400).json({ error: "Games array is required" });
   }
 
-  console.log("Received request to update user game:", { userId, id_game, status, type });
+  console.log("Received request to update user game:", { userId, id_game, status });
   if (status !== "aimé" && status !== "à tester") {
     return res.status(400).json({ error: "Invalid status. Must be 'aimé' or 'à tester'" });
   }
 
   try {
-    await Games.updateUserGame(userId, id_game, status, type);
+    await Games.updateUserGame(userId, id_game, status);
     res.status(200).json({ message: "User games updated successfully" });
   } catch (error) {
     console.error("Error updating user games:", error);

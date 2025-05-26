@@ -57,21 +57,13 @@ const getUserGames = async (userId) => {
 };
 
 // Mise à jour du statut d'un jeu pour un utilisateur via la procédure stockée
-const updateUserGame = async (userId, gameId, statut, type) => {
+const updateUserGame = async (userId, gameId, statut) => {
   try {
-    if (type === 1) {
-      await pool.query(
-        "CALL update_status(?, ?, ?)",
-        [userId, gameId, statut]
-      );
-      return { userId, gameId, statut };
-    } else if (type === 0) {
-      await pool.query(
-        "DELETE FROM utilisateurs_jeux WHERE ID_utilisateur = ? AND ID_jeu = ? AND statut = ?",
-        [userId, gameId, statut]
-      );
-      return { userId, gameId, deleted: true };
-    }
+    await pool.query(
+      "CALL update_status(?, ?, ?)",
+      [userId, gameId, statut]
+    );
+    return { userId, gameId, statut };
     
   } catch (error) {
     console.error("Error updating user game:", error);
