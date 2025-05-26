@@ -92,21 +92,21 @@ const updateUser = async (req, res) => {
 };
 
 const deleteUser = async (req, res) => {
-  const { id } = req.body;
-  try {
-    if (!validateAdmin(req.user) && req.user.id !== id) {
-      return res.status(403).json({ message: "Access denied" });
+    const { id } = req.params;
+    try {
+        if (!validateAdmin(req.user) && req.user.id !== id) {
+            return res.status(403).json({ message: "Access denied" });
+        }
+        const user = await User.findUserById(id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        await User.deleteUser(id);
+        res.status(200).json({ message: "User deleted successfully" });
+    } catch (error) {
+        console.error("Error deleting user:", error);
+        res.status(500).json({ message: "Server error" });
     }
-    const user = await User.findUserById(id);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    await User.deleteUser(id);
-    res.status(200).json({ message: "User deleted successfully" });
-  } catch (error) {
-    console.error("Error deleting user:", error);
-    res.status(500).json({ message: "Server error" });
-  }
 };
 
 const getUser = async (req, res) => {

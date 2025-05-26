@@ -63,16 +63,26 @@ const updateUser = async (id, pseudo, email, mot_de_passe, role_user) => {
 };
 
 const deleteUser = async (id) => {
-  const query = "DELETE FROM Utilisateur WHERE ID_utilisateur = ?";
-  const values = [id];
-
-  try {
-    const [result] = await pool.execute(query, values);
-    return result.affectedRows; // Return the number of affected rows
-  } catch (error) {
-    console.error("Error deleting user:", error);
-    throw error;
-  }
+    const queries = [
+        `DELETE FROM utilisateur_evenements WHERE ID_utilisateur = ?`,
+        `DELETE FROM utilisateurs_jeux WHERE ID_utilisateur = ?`,
+        `DELETE FROM Utilisateur WHERE ID_utilisateur = ?`
+    ]
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction();
+        for (const query of queries) {
+            await connection.execute(query, [id]);
+        }
+        await connection.commit();
+        return true;
+    } catch (error) {
+        await connection.rollback();
+        console.error('Error deleting user:', error);
+        throw error;
+    } finally {
+        connection.release();
+    }
 };
 
 const findAllUsers = async () => {
