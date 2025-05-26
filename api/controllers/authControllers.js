@@ -44,7 +44,7 @@ const register = async (req, res) => {
 };
 
 const createUser = async (req, res) => {
-    const { pseudo, email, password } = req.body;
+    const { pseudo, email, password, role_user } = req.body;
     try {
         if (!validateAdmin(req.user)) {
             return res.status(403).json({ message: "Access denied" });
@@ -54,7 +54,7 @@ const createUser = async (req, res) => {
             return res.status(400).json({ message: "User already exists" });
         }
         const hashedPassword = await bcrypt.hash(password, 10);
-        await User.createUser(pseudo, email, hashedPassword, 2);
+        await User.createUser(pseudo, email, hashedPassword, role_user);
         res.status(201).json({ message: "User created successfully" });
     } catch (error) {
         console.error("Error creating user:", error);
