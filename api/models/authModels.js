@@ -1,9 +1,8 @@
 const { pool } = require("../db");
 
 const findUserByString = async (string) => {
-  const query =
-    "SELECT * FROM Utilisateur WHERE pseudo LIKE '%?%' OR email LIKE '%?%'";
-  const values = [string, string];
+  const query = "SELECT * FROM Utilisateur WHERE pseudo LIKE ? OR email LIKE ?";
+  const values = [`%${string}%`, `%${string}%`];
 
   try {
     const [rows] = await pool.execute(query, values);
