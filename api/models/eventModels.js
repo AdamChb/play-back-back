@@ -1,19 +1,38 @@
 const { pool } = require('../db');
 
 // Créer un événement (pas de procédure, insertion directe)
-const createEvent = async (nom_session, description, date_heure, difficulte, nb_part_max, duree) => {
-    const query = `
-        INSERT INTO evenement (nom_session, description, date_heure, difficulte, nb_part_max, duree)
-        VALUES (?, ?, ?, ?, ?, ?)
-    `;
-    const values = [nom_session, description, date_heure, difficulte, nb_part_max, duree];
-
+const createEvent = async (nom_session, description, date_heure, difficulte, nb_part_max, duree, ID_jeux) => {
+    const conn = await pool.getConnection();
     try {
-        const [result] = await pool.execute(query, values);
-        return { id: result.insertId, nom_session, description, date_heure, difficulte, nb_part_max, duree };
+        await conn.beginTransaction();
+
+        // Création de l'événement
+        const insertEventQuery = `
+            INSERT INTO evenement (nom_session, description, date_heure, difficulte, nb_part_max, duree)
+            VALUES (?, ?, ?, ?, ?, ?)
+        `;
+        const eventValues = [nom_session, description, date_heure, difficulte, nb_part_max, duree];
+        const [result] = await conn.execute(insertEventQuery, eventValues);
+        const eventId = result.insertId;
+
+        // Association des jeux à l'événement
+        if (Array.isArray(ID_jeux) && ID_jeux.length > 0) {
+            const insertGamesQuery = `
+                INSERT INTO evenement_jeux (ID_jeu, ID_evenement)
+                VALUES ${ID_jeux.map(() => '(?, ?)').join(', ')}
+            `;
+            const gamesValues = ID_jeux.flatMap(id_jeu => [id_jeu, eventId]);
+            await conn.execute(insertGamesQuery, gamesValues);
+        }
+
+        await conn.commit();
+        return { id: eventId, nom_session, description, date_heure, difficulte, nb_part_max, duree, jeux: ID_jeux };
     } catch (error) {
+        await conn.rollback();
         console.error('Error creating event:', error);
         throw error;
+    } finally {
+        conn.release();
     }
 };
 

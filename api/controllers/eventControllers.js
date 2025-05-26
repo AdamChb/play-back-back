@@ -3,12 +3,15 @@ const { validateAdmin, validateUser, validateEmployee } = require("../middleware
 const Event = require("../models/eventModels");
 
 const createEvent = async (req, res) => {
-    const { nom_session, description, date_heure, difficulte, nb_part_max, duree } = req.body;
+    const { nom_session, description, date_heure, difficulte, nb_part_max, duree, ID_jeux } = req.body;
     try {
         if (!validateEmployee(req.user) && !validateAdmin(req.user)) {
             return res.status(403).json({ message: "Access denied" });
         }
-        const newEvent = await Event.createEvent(nom_session, description, date_heure, difficulte, nb_part_max, duree);
+        if (!ID_jeux || ID_jeux.lenght === 0) {
+            return res.status(400).json({ message: "Game ID is required" });
+        }
+        const newEvent = await Event.createEvent(nom_session, description, date_heure, difficulte, nb_part_max, duree, ID_jeux);
         res.status(201).json(newEvent);
     } catch (error) {
         console.error("Error creating event:", error);
