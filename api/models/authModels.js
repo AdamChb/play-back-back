@@ -7,7 +7,7 @@ const findUserByString = async (string) => {
 
   try {
     const [rows] = await pool.execute(query, values);
-    return rows[0]; // Return the first row if found
+    return rows; // Return the first row if found
   } catch (error) {
     console.error("Error finding user by string:", error);
     throw error;
@@ -20,7 +20,7 @@ const findUserById = async (id) => {
 
   try {
     const [rows] = await pool.execute(query, values);
-    return rows; // Return the first row if found
+    return rows[0]; // Return the first row if found
   } catch (error) {
     console.error("Error finding user by ID:", error);
     throw error;
