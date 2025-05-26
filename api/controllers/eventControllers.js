@@ -3,12 +3,12 @@ const { validateAdmin, validateUser, validateEmployee } = require("../middleware
 const Event = require("../models/eventModels");
 
 const createEvent = async (req, res) => {
-    const { title, description, date, location } = req.body;
+    const { nom_session, description, date_heure, difficulte, nb_part_max, duree } = req.body;
     try {
-        if (!validateEmployee(req.user)) {
+        if (!validateEmployee(req.user) && !validateAdmin(req.user)) {
             return res.status(403).json({ message: "Access denied" });
         }
-        const newEvent = await Event.createEvent(title, description, date, location);
+        const newEvent = await Event.createEvent(nom_session, description, date_heure, difficulte, nb_part_max, duree);
         res.status(201).json(newEvent);
     } catch (error) {
         console.error("Error creating event:", error);
@@ -19,7 +19,7 @@ const createEvent = async (req, res) => {
 const deleteEvent = async (req, res) => {
     const { id } = req.params;
     try {
-        if (!validateEmployee(req.user)) {
+        if (!validateEmployee(req.user) && !validateAdmin(req.user)) {
             return res.status(403).json({ message: "Access denied" });
         }
         const event = await Event.findEventById(id);
@@ -36,17 +36,20 @@ const deleteEvent = async (req, res) => {
 
 const updateEvent = async (req, res) => {
     const { id } = req.params;
-    const { title, description, date, location } = req.body;
+    const { nom_session, description, date_heure, difficulte, nb_part_max, duree } = req.body;
     try {
-        if (!validateEmployee(req.user)) {
+        if (!validateEmployee(req.user) && !validateAdmin(req.user)) {
             return res.status(403).json({ message: "Access denied" });
         }
         const event = await Event.findEventById(id);
         if (!event) {
             return res.status(404).json({ message: "Event not found" });
         }
-        const updatedEvent = await Event.updateEvent(id, title, description, date, location);
-        res.status(200).json(updatedEvent);
+        const affectedRows = await Event.updateEvent(id, nom_session, description, date_heure, difficulte, nb_part_max, duree);
+        if (affectedRows === 0) {
+            return res.status(400).json({ message: "No changes made" });
+        }
+        res.status(200).json({ message: "Event updated successfully" });
     } catch (error) {
         console.error("Error updating event:", error);
         res.status(500).json({ message: "Server error" });
@@ -56,7 +59,7 @@ const updateEvent = async (req, res) => {
 const toggleAttendance = async (req, res) => {
     const { id } = req.params;
     try {
-        if (!validateUser(req.user)) {
+        if (!validateUser(req.user) && !validateEmployee(req.user)) {
             return res.status(403).json({ message: "Access denied" });
         }
         const event = await Event.findEventById(id);
@@ -64,9 +67,31 @@ const toggleAttendance = async (req, res) => {
             return res.status(404).json({ message: "Event not found" });
         }
         const attendance = await Event.toggleAttendance(id, req.user.id);
-        res.status(200).json(attendance);
+        if (attendance.enrolled) {
+            res.status(200).json({ message: "User enrolled in event", enrolled: true });
+        } else {
+            res.status(200).json({ message: "User unenrolled from event", enrolled: false });
+        }
     } catch (error) {
         console.error("Error toggling attendance:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+const checkAttendance = async (req, res) => {
+    const { eventId, userId } = req.body;
+    try {
+        if (!validateUser(req.user) && !validateEmployee(req.user)) {
+            return res.status(403).json({ message: "Access denied" });
+        }
+        const event = await Event.findEventById(eventId);
+        if (!event) {
+            return res.status(404).json({ message: "Event not found" });
+        }
+        const isEnrolled = await Event.checkAttendance(eventId, userId);
+        res.status(200).json({ enrolled: isEnrolled });
+    } catch (error) {
+        console.error("Error checking attendance:", error);
         res.status(500).json({ message: "Server error" });
     }
 };
@@ -105,7 +130,7 @@ const getAllEvents = async (req, res) => {
 const enrollEvent = async (req, res) => {
     const { id } = req.body;
     try {
-        if (!validateUser(req.user)) {
+        if (!validateUser(req.user) && !validateEmployee(req.user)) {
             return res.status(403).json({ message: "Access denied" });
         }
         const event = await Event.findEventById(id);
@@ -122,7 +147,7 @@ const enrollEvent = async (req, res) => {
 
 const getUserNextEvents = async (req, res) => {
     try {
-        if (!validateUser(req.user)) {
+        if (!validateUser(req.user) && !validateEmployee(req.user)) {
             return res.status(403).json({ message: "Access denied" });
         }
         const events = await Event.getUserNextEvents(req.user.id);
@@ -135,7 +160,7 @@ const getUserNextEvents = async (req, res) => {
 
 const getUserOldEvents = async (req, res) => {
     try {
-        if (!validateUser(req.user)) {
+        if (!validateUser(req.user) && !validateEmployee(req.user)) {
             return res.status(403).json({ message: "Access denied" });
         }
         const events = await Event.getUserOldEvents(req.user.id);
@@ -151,6 +176,7 @@ module.exports = {
     deleteEvent,
     updateEvent,
     toggleAttendance,
+    checkAttendance,
     searchEvents,
     getNextEvents,
     getAllEvents,
