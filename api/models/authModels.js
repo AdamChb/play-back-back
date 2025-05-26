@@ -13,6 +13,19 @@ const findUserByString = async (string) => {
   }
 };
 
+const findUserByEmail = async (email) => {
+  const query = "SELECT * FROM Utilisateur WHERE pseudo email = ?";
+  const values = [email];
+
+  try {
+    const [rows] = await pool.execute(query, values);
+    return rows[0]; // Return the first row if found
+  } catch (error) {
+    console.error("Error finding user by string:", error);
+    throw error;
+  }
+};
+
 const findUserById = async (id) => {
   const query = "SELECT * FROM Utilisateur WHERE ID_utilisateur = ?";
   const values = [id];
@@ -63,26 +76,26 @@ const updateUser = async (id, pseudo, email, mot_de_passe, role_user) => {
 };
 
 const deleteUser = async (id) => {
-    const queries = [
-        `DELETE FROM utilisateur_evenements WHERE ID_utilisateur = ?`,
-        `DELETE FROM utilisateurs_jeux WHERE ID_utilisateur = ?`,
-        `DELETE FROM Utilisateur WHERE ID_utilisateur = ?`
-    ]
-    const connection = await pool.getConnection();
-    try {
-        await connection.beginTransaction();
-        for (const query of queries) {
-            await connection.execute(query, [id]);
-        }
-        await connection.commit();
-        return true;
-    } catch (error) {
-        await connection.rollback();
-        console.error('Error deleting user:', error);
-        throw error;
-    } finally {
-        connection.release();
+  const queries = [
+    `DELETE FROM utilisateur_evenements WHERE ID_utilisateur = ?`,
+    `DELETE FROM utilisateurs_jeux WHERE ID_utilisateur = ?`,
+    `DELETE FROM Utilisateur WHERE ID_utilisateur = ?`,
+  ];
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+    for (const query of queries) {
+      await connection.execute(query, [id]);
     }
+    await connection.commit();
+    return true;
+  } catch (error) {
+    await connection.rollback();
+    console.error("Error deleting user:", error);
+    throw error;
+  } finally {
+    connection.release();
+  }
 };
 
 const findAllUsers = async () => {
@@ -99,6 +112,7 @@ const findAllUsers = async () => {
 };
 
 module.exports = {
+  findUserByEmail,
   findUserByString,
   findUserById,
   createUser,
