@@ -1,23 +1,12 @@
 const { pool } = require("../db");
 
-// const searchGames = async (name) => {
-//   try {
-//     const [rows] = await pool.query(
-//       "SELECT nom FROM games WHERE nom LIKE %?%",
-//       ["%" + name + "%"]
-//     );
-//     return rows;
-//   } catch (error) {
-//     console.error("Error searching games:", error);
-//     throw error;
-//   }
-// };
-
+// Recherche de jeux par nom
 const searchGames = async (name) => {
   try {
-    const [rows] = await pool.query("SELECT * FROM games WHERE nom LIKE ?", [
-      "%" + name + "%",
-    ]);
+    const [rows] = await pool.query(
+      "SELECT * FROM jeu WHERE nom LIKE ?",
+      [`%${name}%`]
+    );
     return rows;
   } catch (error) {
     console.error("Error searching games:", error);
@@ -25,21 +14,24 @@ const searchGames = async (name) => {
   }
 };
 
-const gameInfo = async (id_game) => {
+// Infos d'un jeu par ID
+const gameInfo = async (id_jeu) => {
   try {
-    const [rows] = await pool.query("SELECT * FROM games WHERE id_game = ?", [
-      id_game,
-    ]);
-    return rows;
+    const [rows] = await pool.query(
+      "SELECT * FROM jeu WHERE ID_jeu = ?",
+      [id_jeu]
+    );
+    return rows[0] || null;
   } catch (error) {
     console.error("Error fetching game info:", error);
     throw error;
   }
 };
 
+// Tous les jeux
 const getAllGames = async () => {
   try {
-    const [rows] = await pool.query("SELECT * FROM games");
+    const [rows] = await pool.query("SELECT * FROM jeu");
     return rows;
   } catch (error) {
     console.error("Error fetching all games:", error);
@@ -47,46 +39,14 @@ const getAllGames = async () => {
   }
 };
 
-const addGame = async (nom, description, image, date_sortie) => {
-  try {
-    const [result] = await pool.query(
-      "INSERT INTO games (nom, description, image, date_sortie) VALUES (?, ?, ?, ?)",
-      [nom, description, image, date_sortie]
-    );
-    return { id_game: result.insertId, nom, description, image, date_sortie };
-  } catch (error) {
-    console.error("Error adding game:", error);
-    throw error;
-  }
-};
-
-const updateGame = async (id_game, nom, description, image, date_sortie) => {
-  try {
-    await pool.query(
-      "UPDATE games SET nom = ?, description = ?, image = ?, date_sortie = ? WHERE id_game = ?",
-      [nom, description, image, date_sortie, id_game]
-    );
-    return { id_game, nom, description, image, date_sortie };
-  } catch (error) {
-    console.error("Error updating game:", error);
-    throw error;
-  }
-};
-
-const deleteGame = async (id_game) => {
-  try {
-    await pool.query("DELETE FROM games WHERE id_game = ?", [id_game]);
-    return { message: "Game deleted successfully" };
-  } catch (error) {
-    console.error("Error deleting game:", error);
-    throw error;
-  }
-};
-
+// Jeux d'un utilisateur
 const getUserGames = async (userId) => {
   try {
     const [rows] = await pool.query(
-      "SELECT * FROM user_games WHERE user_id = ?",
+      `SELECT j.* , uj.date_, uj.statut
+       FROM utilisateurs_jeux uj
+       JOIN jeu j ON uj.ID_jeu = j.ID_jeu
+       WHERE uj.ID_utilisateur = ?`,
       [userId]
     );
     return rows;
@@ -96,19 +56,34 @@ const getUserGames = async (userId) => {
   }
 };
 
-const updateUserGame = async (userId, gameId, status) => {
+// Mise à jour du statut d'un jeu pour un utilisateur via la procédure stockée
+const updateUserGame = async (userId, gameId, statut, type) => {
   try {
-    await pool.query(
-      "UPDATE user_games SET status = ? WHERE user_id = ? AND game_id = ?",
-      [status, userId, gameId]
-    );
-    return { userId, gameId, status };
+    if (type === 1) {
+      await pool.query(
+        "CALL update_status(?, ?, ?)",
+        [userId, gameId, statut]
+      );
+      return { userId, gameId, statut };
+    } else if (type === 0) {
+      await pool.query(
+        "DELETE FROM utilisateurs_jeux WHERE ID_utilisateur = ? AND ID_jeu = ? AND statut = ?",
+        [userId, gameId, statut]
+      );
+      return { userId, gameId, deleted: true };
+    }
+    
   } catch (error) {
     console.error("Error updating user game:", error);
     throw error;
   }
 };
 
+
 module.exports = {
-  searchGames
+  searchGames,
+  gameInfo,
+  getAllGames,
+  getUserGames,
+  updateUserGame
 };

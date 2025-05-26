@@ -4,10 +4,6 @@ const { validateAdmin, validateEmployee, validateUser } = require("../middleware
 const searchGames = async (req, res) => {
   const { name } = req.query;
 
-  if (!name) {
-    return res.status(400).json({ error: "Name query parameter is required" });
-  }
-
   try {
     const games = await Games.searchGames(name);
     res.json(games);
@@ -18,7 +14,7 @@ const searchGames = async (req, res) => {
 };
 
 const gameInfo = async (req, res) => {
-  const { id_game } = req.query;
+  const { id_game } = req.params;
 
   if (!id_game) {
     return res.status(400).json({ error: "ID_game query parameter is required" });
@@ -26,10 +22,10 @@ const gameInfo = async (req, res) => {
 
   try {
     const gameInfo = await Games.gameInfo(id_game);
-    if (gameInfo.length === 0) {
+    if (!gameInfo) {
       return res.status(404).json({ error: "Game not found" });
     }
-    res.status(200).json(gameInfo[0]);
+    res.status(200).json(gameInfo);
   } catch (error) {
     console.error("Error fetching game info:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -39,62 +35,9 @@ const gameInfo = async (req, res) => {
 const getAllGames = async (req, res) => {
   try {
     const games = await Games.getAllGames();
-    res.json(games);
+    res.status(200).json(games);
   } catch (error) {
     console.error("Error fetching all games:", error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-};
-
-const addGame = async (req, res) => {
-  const { nom, description, image, date_sortie } = req.body;
-
-  if (!validateAdmin(req.user) && !validateEmployee(req.user)) {
-    return res.status(403).json({ error: "Access denied" });
-  }
-
-  if (!nom || !description || !image || !date_sortie) {
-    return res.status(400).json({ error: "All fields are required" });
-  }
-
-  try {
-    const newGame = await Games.addGame(nom, description, image, date_sortie);
-    res.status(201).json(newGame);
-  } catch (error) {
-    console.error("Error adding game:", error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-};
-
-const updateGame = async (req, res) => {
-  const { id } = req.params;
-  const { nom, description, image, date_sortie } = req.body;
-
-  if (!validateAdmin(req.user) && !validateEmployee(req.user)) {
-    return res.status(403).json({ error: "Access denied" });
-  }
-
-  try {
-    const updatedGame = await Games.updateGame(id, nom, description, image, date_sortie);
-    res.status(200).json(updatedGame);
-  } catch (error) {
-    console.error("Error updating game:", error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-};
-
-const deleteGame = async (req, res) => {
-  const { id } = req.params;
-
-  if (!validateAdmin(req.user) && !validateEmployee(req.user)) {
-    return res.status(403).json({ error: "Access denied" });
-  }
-
-  try {
-    await Games.deleteGame(id);
-    res.status(204).send();
-  } catch (error) {
-    console.error("Error deleting game:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };
@@ -117,7 +60,7 @@ const getUserGames = async (req, res) => {
 
 const updateUserGame = async (req, res) => {
   const userId = req.user.id;
-  const { id_game, status } = req.body;
+  const { id_game, status, type } = req.body;
 
   if (!validateUser(req.user)) {
     return res.status(403).json({ error: "Access denied" });
@@ -127,8 +70,13 @@ const updateUserGame = async (req, res) => {
     return res.status(400).json({ error: "Games array is required" });
   }
 
+  console.log("Received request to update user game:", { userId, id_game, status, type });
+  if (status !== "aimé" && status !== "à tester") {
+    return res.status(400).json({ error: "Invalid status. Must be 'aimé' or 'à tester'" });
+  }
+
   try {
-    await Games.updateUserGames(userId, id_game, status);
+    await Games.updateUserGame(userId, id_game, status, type);
     res.status(200).json({ message: "User games updated successfully" });
   } catch (error) {
     console.error("Error updating user games:", error);
@@ -140,9 +88,6 @@ module.exports = {
   searchGames,
   gameInfo,
   getAllGames,
-  addGame,
-  updateGame,
-  deleteGame,
   getUserGames,
   updateUserGame
 };
