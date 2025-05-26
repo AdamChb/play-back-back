@@ -94,21 +94,6 @@ const updateEvent = async (id, nom_session, description, date_heure, difficulte,
     }
 };
 
-// Toggle la participation à un événement (utilise les procédures stockées corrigées)
-const toggleAttendance = async (eventId, userId) => {
-    const checkQuery = `SELECT * FROM utilisateur_evenements WHERE ID_utilisateur = ? AND ID_evenement = ?`;
-    const [rows] = await pool.execute(checkQuery, [userId, eventId]);
-    if (rows.length > 0) {
-        // Déjà inscrit, on retire
-        await pool.query('CALL delete_user_participation(?, ?)', [userId, eventId]);
-        return { enrolled: false };
-    } else {
-        // Pas encore inscrit, on ajoute
-        await pool.query('CALL add_user_participation(?, ?)', [userId, eventId]);
-        return { enrolled: true };
-    }
-};
-
 const checkAttendance = async (eventId, userId) => {
     const query = `
         UPDATE utilisateur_evenements SET venu = 1 WHERE utilisateur_evenements.ID_utilisateur = ? AND utilisateur_evenements.ID_evenement = ?
@@ -123,12 +108,12 @@ const checkAttendance = async (eventId, userId) => {
 };
 
 // Recherche d'événements (titre ou description)
-const searchEvents = async (searchTerm) => {
+const searchEvents = async (name) => {
     const query = `
         SELECT * FROM evenement
         WHERE nom_session LIKE ? OR description LIKE ?
     `;
-    const values = [`%${searchTerm}%`, `%${searchTerm}%`];
+    const values = ["%" + name + "%", "%" + name + "%"];
     try {
         const [rows] = await pool.execute(query, values);
         return rows;
@@ -164,8 +149,17 @@ const getAllEvents = async () => {
 
 // Inscription à un événement (utilise la procédure corrigée)
 const enrollEvent = async (eventId, userId) => {
-    await pool.query('CALL add_user_participation(?, ?)', [userId, eventId]);
-    return { enrolled: true };
+    const checkQuery = `SELECT * FROM utilisateur_evenements WHERE ID_utilisateur = ? AND ID_evenement = ?`;
+    const [rows] = await pool.execute(checkQuery, [userId, eventId]);
+    if (rows.length > 0) {
+        // Déjà inscrit, on retire
+        await pool.query('CALL delete_user_participation(?, ?)', [userId, eventId]);
+        return { enrolled: false };
+    } else {
+        // Pas encore inscrit, on ajoute
+        await pool.query('CALL add_user_participation(?, ?)', [userId, eventId]);
+        return { enrolled: true };
+    }
 };
 
 // Prochains événements de l'utilisateur
@@ -209,7 +203,6 @@ module.exports = {
     findEventById,
     deleteEvent,
     updateEvent,
-    toggleAttendance,
     checkAttendance,
     searchEvents,
     getNextEvents,

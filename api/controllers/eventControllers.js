@@ -59,28 +59,6 @@ const updateEvent = async (req, res) => {
     }
 };
 
-const toggleAttendance = async (req, res) => {
-    const { id } = req.params;
-    try {
-        if (!validateUser(req.user) && !validateEmployee(req.user)) {
-            return res.status(403).json({ message: "Access denied" });
-        }
-        const event = await Event.findEventById(id);
-        if (!event) {
-            return res.status(404).json({ message: "Event not found" });
-        }
-        const attendance = await Event.toggleAttendance(id, req.user.id);
-        if (attendance.enrolled) {
-            res.status(200).json({ message: "User enrolled in event", enrolled: true });
-        } else {
-            res.status(200).json({ message: "User unenrolled from event", enrolled: false });
-        }
-    } catch (error) {
-        console.error("Error toggling attendance:", error);
-        res.status(500).json({ message: "Server error" });
-    }
-};
-
 const checkAttendance = async (req, res) => {
     const { eventId, userId } = req.body;
     try {
@@ -92,7 +70,7 @@ const checkAttendance = async (req, res) => {
             return res.status(404).json({ message: "Event not found" });
         }
         const isEnrolled = await Event.checkAttendance(eventId, userId);
-        res.status(200).json({ enrolled: isEnrolled });
+        res.status(200).json({ enrolled: true, message: "Attendance checked successfully" });
     } catch (error) {
         console.error("Error checking attendance:", error);
         res.status(500).json({ message: "Server error" });
@@ -100,9 +78,9 @@ const checkAttendance = async (req, res) => {
 };
 
 const searchEvents = async (req, res) => {
-    const { query } = req.query;
+    const { event } = req.query;
     try {
-        const events = await Event.searchEvents(query);
+        const events = await Event.searchEvents(event);
         res.status(200).json(events);
     } catch (error) {
         console.error("Error searching events:", error);
@@ -131,7 +109,7 @@ const getAllEvents = async (req, res) => {
 };
 
 const enrollEvent = async (req, res) => {
-    const { id } = req.body;
+    const { id } = req.params;
     try {
         if (!validateUser(req.user) && !validateEmployee(req.user)) {
             return res.status(403).json({ message: "Access denied" });
@@ -140,10 +118,14 @@ const enrollEvent = async (req, res) => {
         if (!event) {
             return res.status(404).json({ message: "Event not found" });
         }
-        const enrollment = await Event.enrollEvent(id, req.user.id);
-        res.status(200).json(enrollment);
+        const attendance = await Event.enrollEvent(id, req.user.id);
+        if (attendance.enrolled) {
+            res.status(200).json({ message: "User enrolled in event", enrolled: true });
+        } else {
+            res.status(200).json({ message: "User unenrolled from event", enrolled: false });
+        }
     } catch (error) {
-        console.error("Error enrolling in event:", error);
+        console.error("Error toggling attendance:", error);
         res.status(500).json({ message: "Server error" });
     }
 };
@@ -178,7 +160,6 @@ module.exports = {
     createEvent,
     deleteEvent,
     updateEvent,
-    toggleAttendance,
     checkAttendance,
     searchEvents,
     getNextEvents,
