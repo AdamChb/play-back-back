@@ -57,9 +57,8 @@ const getUserGames = async (userId) => {
 const getUserGameById = async (userId, gameId) => {
   try {
     const [rows] = await pool.query(
-      `SELECT j.*, uj.date_, uj.statut
+      `SELECT uj.statut
        FROM utilisateurs_jeux uj
-       JOIN jeu j ON uj.ID_jeu = j.ID_jeu
        WHERE uj.ID_utilisateur = ? AND uj.ID_jeu = ?`,
       [userId, gameId]
     );
