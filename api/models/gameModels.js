@@ -62,7 +62,7 @@ const getUserGameById = async (userId, gameId) => {
        WHERE uj.ID_utilisateur = ? AND uj.ID_jeu = ?`,
       [userId, gameId]
     );
-    return rows[0] || null;
+    return rows || null;
   } catch (error) {
     console.error("Error fetching user game by ID:", error);
     throw error;
