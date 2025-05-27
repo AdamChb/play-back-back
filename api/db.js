@@ -1,5 +1,5 @@
-const mysql = require('mysql2/promise'); // Utiliser la version promise de mysql2
-require('dotenv').config();
+const mysql = require("mysql2/promise"); // Utiliser la version promise de mysql2
+require("dotenv").config();
 
 let pool;
 
@@ -15,7 +15,7 @@ function initPool() {
       connectionLimit: 10, // Limite de connexions simultanées
       queueLimit: 0,
     });
-    console.log('Database pool initialized');
+    console.log("Database pool initialized");
   }
   return pool;
 }
@@ -25,9 +25,9 @@ async function closePool() {
   if (pool) {
     try {
       await pool.end();
-      console.log('Database pool closed');
+      console.log("Database pool closed");
     } catch (err) {
-      console.error('Error closing the database pool:', err);
+      console.error("Error closing the database pool:", err);
     }
     pool = null; // Réinitialiser le pool après fermeture
   }
@@ -35,11 +35,11 @@ async function closePool() {
 
 // Méthode pour gérer les erreurs et redémarrer le pool si nécessaire
 async function handleDatabaseError(err) {
-  console.error('Database error:', err);
+  console.error("Database error:", err);
 
   // Si l'erreur est critique, redémarrer le pool
-  if (err.code === 'PROTOCOL_CONNECTION_LOST' || err.fatal) {
-    console.log('Reinitializing database pool...');
+  if (err.code === "PROTOCOL_CONNECTION_LOST" || err.fatal) {
+    console.log("Reinitializing database pool...");
     await closePool(); // Fermer le pool existant
     initPool(); // Réinitialiser le pool
   }
