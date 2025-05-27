@@ -146,6 +146,17 @@ const checkAttendance = async (eventId, userId) => {
   }
 };
 
+const countEventParticipants = async (eventId) => {
+  const query = `SELECT count_participation(?) AS nb_participants`;
+  try {
+    const [rows] = await pool.execute(query, [eventId]);
+    return rows[0];
+  } catch (error) {
+    console.error("Error counting event participants:", error);
+    throw error;
+  }
+};
+
 // Recherche d'événements (titre ou description)
 const searchEvents = async (name) => {
   const query = `
@@ -260,6 +271,7 @@ module.exports = {
   deleteEvent,
   updateEvent,
   checkAttendance,
+  countEventParticipants,
   searchEvents,
   getEventGames,
   getNextEvents,
