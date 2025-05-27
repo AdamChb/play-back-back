@@ -139,6 +139,21 @@ const searchEvents = async (req, res) => {
   }
 };
 
+const getEventGames = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const event = await Event.findEventById(id);
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+    const games = await Event.getEventGames(id);
+    res.status(200).json(games);
+  } catch (error) {
+    console.error("Error getting event games:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 const getNextEvents = async (req, res) => {
   try {
     const events = await Event.getNextEvents();
@@ -218,6 +233,7 @@ module.exports = {
   updateEvent,
   checkAttendance,
   searchEvents,
+  getEventGames,
   getNextEvents,
   getAllEvents,
   enrollEvent,
