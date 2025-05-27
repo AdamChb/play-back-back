@@ -40,7 +40,7 @@ const findUserById = async (id) => {
 };
 
 const createUser = async (pseudo, email, password, role) => {
-  const query = "CALL ajouter_utilisateur(?, ?, ?, ?)";
+  const query = `INSERT INTO Utilisateur(pseudo, email, mot_de_passe, role_user) VALUES(?, ?, ?, ?)`;
   const values = [pseudo, email, password, role];
 
   try {
