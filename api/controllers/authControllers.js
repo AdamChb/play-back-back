@@ -63,7 +63,7 @@ const createUser = async (req, res) => {
     }
     const hashedPassword = await bcrypt.hash(password, 10);
     await User.createUser(pseudo, email, hashedPassword, role_user);
-    res.status(201).json({ message: "User created successfully" });
+    const newUser = res.status(201).json({ message: "User created successfully", user: { userId: newUser.ID_utilisateur, pseudo, email, role_user } });
   } catch (error) {
     console.error("Error creating user:", error);
     res.status(500).json({ message: "Server error" });
