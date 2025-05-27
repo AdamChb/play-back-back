@@ -4,7 +4,7 @@ const router = express.Router();
 const eventControllers = require("../controllers/eventControllers");
 const { authenticateToken } = require("../middleware/authMiddleware");
 
-router.get("/:id", eventControllers.getEventById);
+router.get("/get/:id", eventControllers.getEventById);
 router.post("/create", authenticateToken, eventControllers.createEvent);
 router.delete("/delete/:id", authenticateToken, eventControllers.deleteEvent);
 router.post("/update/:id", authenticateToken, eventControllers.updateEvent);
