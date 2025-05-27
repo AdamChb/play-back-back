@@ -247,6 +247,7 @@ module.exports = {
   deleteEvent,
   updateEvent,
   checkAttendance,
+  countEventParticipants,
   searchEvents,
   getEventGames,
   getNextEvents,
