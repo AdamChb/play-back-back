@@ -1,5 +1,9 @@
 const Games = require("../models/gameModels");
-const { validateAdmin, validateEmployee, validateUser } = require("../middleware/validationMiddleware");
+const {
+  validateAdmin,
+  validateEmployee,
+  validateUser,
+} = require("../middleware/validationMiddleware");
 
 const searchGames = async (req, res) => {
   const { name } = req.query;
@@ -17,7 +21,9 @@ const gameInfo = async (req, res) => {
   const { id_game } = req.params;
 
   if (!id_game) {
-    return res.status(400).json({ error: "ID_game query parameter is required" });
+    return res
+      .status(400)
+      .json({ error: "ID_game query parameter is required" });
   }
 
   try {
@@ -58,6 +64,26 @@ const getUserGames = async (req, res) => {
   }
 };
 
+const getUserGameById = async (req, res) => {
+  const userId = req.user.id;
+  const { id_game } = req.params;
+
+  if (!validateUser(req.user)) {
+    return res.status(403).json({ error: "Access denied" });
+  }
+
+  try {
+    const userGame = await Games.getUserGameById(userId, id_game);
+    if (!userGame) {
+      return res.status(404).json({ error: "User game not found" });
+    }
+    res.json(userGame);
+  } catch (error) {
+    console.error("Error fetching user game by ID:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 const updateUserGame = async (req, res) => {
   const userId = req.user.id;
   const { id_game, status } = req.body;
@@ -70,9 +96,15 @@ const updateUserGame = async (req, res) => {
     return res.status(400).json({ error: "Games array is required" });
   }
 
-  console.log("Received request to update user game:", { userId, id_game, status });
+  console.log("Received request to update user game:", {
+    userId,
+    id_game,
+    status,
+  });
   if (status !== "aimé" && status !== "à tester") {
-    return res.status(400).json({ error: "Invalid status. Must be 'aimé' or 'à tester'" });
+    return res
+      .status(400)
+      .json({ error: "Invalid status. Must be 'aimé' or 'à tester'" });
   }
 
   try {
@@ -89,5 +121,6 @@ module.exports = {
   gameInfo,
   getAllGames,
   getUserGames,
-  updateUserGame
+  getUserGameById,
+  updateUserGame,
 };

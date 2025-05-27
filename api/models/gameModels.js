@@ -3,10 +3,9 @@ const { pool } = require("../db");
 // Recherche de jeux par nom
 const searchGames = async (name) => {
   try {
-    const [rows] = await pool.query(
-      "SELECT * FROM jeu WHERE nom LIKE ?",
-      [`%${name}%`]
-    );
+    const [rows] = await pool.query("SELECT * FROM jeu WHERE nom LIKE ?", [
+      `%${name}%`,
+    ]);
     return rows;
   } catch (error) {
     console.error("Error searching games:", error);
@@ -17,10 +16,9 @@ const searchGames = async (name) => {
 // Infos d'un jeu par ID
 const gameInfo = async (id_jeu) => {
   try {
-    const [rows] = await pool.query(
-      "SELECT * FROM jeu WHERE ID_jeu = ?",
-      [id_jeu]
-    );
+    const [rows] = await pool.query("SELECT * FROM jeu WHERE ID_jeu = ?", [
+      id_jeu,
+    ]);
     return rows[0] || null;
   } catch (error) {
     console.error("Error fetching game info:", error);
@@ -56,26 +54,38 @@ const getUserGames = async (userId) => {
   }
 };
 
+const getUserGameById = async (userId, gameId) => {
+  try {
+    const [rows] = await pool.query(
+      `SELECT j.*, uj.date_, uj.statut
+       FROM utilisateurs_jeux uj
+       JOIN jeu j ON uj.ID_jeu = j.ID_jeu
+       WHERE uj.ID_utilisateur = ? AND uj.ID_jeu = ?`,
+      [userId, gameId]
+    );
+    return rows[0] || null;
+  } catch (error) {
+    console.error("Error fetching user game by ID:", error);
+    throw error;
+  }
+};
+
 // Mise à jour du statut d'un jeu pour un utilisateur via la procédure stockée
 const updateUserGame = async (userId, gameId, statut) => {
   try {
-    await pool.query(
-      "CALL update_status(?, ?, ?)",
-      [userId, gameId, statut]
-    );
+    await pool.query("CALL update_status(?, ?, ?)", [userId, gameId, statut]);
     return { userId, gameId, statut };
-    
   } catch (error) {
     console.error("Error updating user game:", error);
     throw error;
   }
 };
 
-
 module.exports = {
   searchGames,
   gameInfo,
   getAllGames,
   getUserGames,
-  updateUserGame
+  getUserGameById,
+  updateUserGame,
 };
