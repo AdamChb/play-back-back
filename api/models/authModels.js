@@ -46,7 +46,7 @@ const createUser = async (pseudo, email, password, role) => {
   try {
     const [result] = await pool.execute(query, values);
     const insertedId = result.insertId;
-    return { ID_personne: insertedId, pseudo: pseudo, email: email };
+    return { ID_utilisateur: insertedId, pseudo: pseudo, email: email };
   } catch (error) {
     console.error("Error creating user:", error);
     throw error;
