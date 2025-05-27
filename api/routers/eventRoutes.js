@@ -9,6 +9,7 @@ router.post("/create", authenticateToken, eventControllers.createEvent);
 router.delete("/delete/:id", authenticateToken, eventControllers.deleteEvent);
 router.post("/update/:id", authenticateToken, eventControllers.updateEvent);
 router.post("/attendance", authenticateToken, eventControllers.checkAttendance);
+router.get("/count/:id", eventControllers.countEventParticipants);
 router.get("/search", eventControllers.searchEvents);
 router.get("/games/:id", eventControllers.getEventGames);
 router.get("/next", eventControllers.getNextEvents);

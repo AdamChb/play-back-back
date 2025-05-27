@@ -128,6 +128,21 @@ const checkAttendance = async (req, res) => {
   }
 };
 
+const countEventParticipants = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const event = await Event.findEventById(id);
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+    const count = await Event.countEventParticipants(id);
+    res.status(200).json({ count: count.nb_participants });
+  } catch (error) {
+    console.error("Error counting event participants:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 const searchEvents = async (req, res) => {
   const { event } = req.query;
   try {
